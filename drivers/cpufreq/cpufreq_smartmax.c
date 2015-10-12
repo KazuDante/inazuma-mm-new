@@ -38,7 +38,9 @@
 #include <linux/kthread.h>
 #include <linux/slab.h>
 #include <linux/kernel_stat.h>
-#include <linux/lcd_notify.h>
+#ifdef CONFIG_POWERSUSPEND
+#include <linux/powersuspend.h>
+#endif
 
 /******************** Tunable parameters: ********************/
 
@@ -193,8 +195,6 @@ static bool boost_running = false;
 static unsigned int ideal_freq;
 static bool is_suspended = false;
 static unsigned int min_sampling_rate;
-
-static struct notifier_block notif;
 
 #define LATENCY_MULTIPLIER			(1000)
 #define MIN_LATENCY_MULTIPLIER			(100)
@@ -1127,25 +1127,30 @@ static struct input_handler dbs_input_handler = {
 	.disconnect = dbs_input_disconnect,
 	.name = "cpufreq_smartmax",
 	.id_table = dbs_ids,
-	};
+};
 
-static int lcd_notifier_callback(struct notifier_block *this,
-					unsigned long event, void *data)
+#ifdef CONFIG_POWERSUSPEND
+static void smartmax_power_suspend(struct power_suspend *handler)
 {
-	if (event == LCD_EVENT_ON_START) {
-		dprintk(SMARTMAX_DEBUG_SUSPEND, "%s\n", __func__);
-		ideal_freq = awake_ideal_freq;
-		is_suspended = false;
-		smartmax_update_min_max_allcpus();
-	} else if (event == LCD_EVENT_OFF_START) {
-		dprintk(SMARTMAX_DEBUG_SUSPEND, "%s\n", __func__);
-		ideal_freq = suspend_ideal_freq;
-		is_suspended = true;
-		smartmax_update_min_max_allcpus();
-	}
-
-	return NOTIFY_OK;
+	dprintk(SMARTMAX_DEBUG_SUSPEND, "%s\n", __func__);
+	ideal_freq = suspend_ideal_freq;
+	is_suspended = true;
+	smartmax_update_min_max_allcpus();
 }
+
+static void smartmax_power_resume(struct power_suspend *handler)
+{
+	dprintk(SMARTMAX_DEBUG_SUSPEND, "%s\n", __func__);
+	ideal_freq = awake_ideal_freq;
+	is_suspended = false;
+	smartmax_update_min_max_allcpus();
+}
+
+static struct power_suspend smartmax_power_suspend_handler = {
+	.suspend = smartmax_power_suspend,
+	.resume = smartmax_power_resume,
+};
+#endif
 
 static int cpufreq_governor_smartmax(struct cpufreq_policy *new_policy,
 		unsigned int event) {
@@ -1204,17 +1209,16 @@ static int cpufreq_governor_smartmax(struct cpufreq_policy *new_policy,
 				return rc;
 			}
 
+#ifdef CONFIG_POWERSUSPEND
+			register_power_suspend(&smartmax_power_suspend_handler);
+#endif
+
 			rc = sysfs_create_group(cpufreq_global_kobject,
 					&smartmax_attr_group);
 			if (rc) {
 				dbs_enable--;
 				mutex_unlock(&dbs_mutex);
 				return rc;
-			}
-
-			notif.notifier_call = lcd_notifier_callback;
-			if (lcd_register_client(&notif)) {
-				return -EINVAL;
 			}
 
 			/* policy latency is in nS. Convert it to uS first */
@@ -1263,8 +1267,9 @@ static int cpufreq_governor_smartmax(struct cpufreq_policy *new_policy,
 				kthread_stop(boost_task);
 			sysfs_remove_group(cpufreq_global_kobject, &smartmax_attr_group);
 			input_unregister_handler(&dbs_input_handler);
-			lcd_unregister_client(&notif);
-			notif.notifier_call = NULL;
+#ifdef CONFIG_POWERSUSPEND
+			unregister_power_suspend(&smartmax_power_suspend_handler);
+#endif
 		}
 
 		mutex_unlock(&dbs_mutex);
