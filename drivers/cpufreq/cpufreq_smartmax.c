@@ -51,16 +51,16 @@
 #define DEFAULT_SUSPEND_IDEAL_FREQ 300000
 #define DEFAULT_AWAKE_IDEAL_FREQ 998400
 #define DEFAULT_RAMP_UP_STEP 300000
-#define DEFAULT_RAMP_DOWN_STEP 200000
-#define DEFAULT_MAX_CPU_LOAD 70
-#define DEFAULT_MIN_CPU_LOAD 35
-#define DEFAULT_UP_RATE 40000
+#define DEFAULT_RAMP_DOWN_STEP 150000
+#define DEFAULT_MAX_CPU_LOAD 80
+#define DEFAULT_MIN_CPU_LOAD 40
+#define DEFAULT_UP_RATE 30000
 #define DEFAULT_DOWN_RATE 60000
 #define DEFAULT_SAMPLING_RATE 30000
-#define DEFAULT_INPUT_BOOST_DURATION 1200000
+#define DEFAULT_INPUT_BOOST_DURATION 2000000
 #define DEFAULT_TOUCH_POKE_FREQ 787200
-#define DEFAULT_BOOST_FREQ 1190400
-#define DEFAULT_IO_IS_BUSY 0
+#define DEFAULT_BOOST_FREQ 1094400
+#define DEFAULT_IO_IS_BUSY 1
 #define DEFAULT_IGNORE_NICE 1
 
 static unsigned int suspend_ideal_freq;
@@ -113,7 +113,7 @@ static bool touch_poke = true;
 /*
  * should ramp_up steps during boost be possible
  */
-static bool ramp_up_during_boost = false;
+static bool ramp_up_during_boost = true;
 
 /*
  * external boost interface - boost if duration is written
