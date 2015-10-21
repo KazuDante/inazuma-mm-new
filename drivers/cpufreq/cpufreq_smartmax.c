@@ -304,7 +304,6 @@ inline static void target_freq(struct cpufreq_policy *policy,
 		int prefered_relation) {
 	int index, target;
 	struct cpufreq_frequency_table *table = this_smartmax->freq_table;
-	unsigned int cpu = this_smartmax->cpu;
 
 	// apply policy limits - just to be sure
 	new_freq = validate_freq(policy, new_freq);
