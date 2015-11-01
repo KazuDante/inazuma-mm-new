@@ -486,7 +486,7 @@ err_out:
 	return ret;
 }
 
-static void intelli_plug_stop(void)
+static void __ref intelli_plug_stop(void)
 {
 	int cpu;
 	struct down_lock *dl;
@@ -502,6 +502,12 @@ static void intelli_plug_stop(void)
 
 	input_unregister_handler(&intelli_plug_input_handler);
 	destroy_workqueue(intelliplug_wq);
+
+	/* online all core if hotplug disabled */
+	for_each_present_cpu(cpu) {
+		if (!cpu_online(cpu))
+			cpu_up(cpu);
+	}
 }
 
 static void intelli_plug_active_eval_fn(unsigned int status)
