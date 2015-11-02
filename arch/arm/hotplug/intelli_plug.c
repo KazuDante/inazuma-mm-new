@@ -86,6 +86,8 @@ static unsigned int nr_fshift = DEFAULT_NR_FSHIFT;
 static unsigned int nr_run_hysteresis = DEFAULT_MAX_CPUS_ONLINE * 2;
 static unsigned int debug_intelli_plug = 0;
 
+static bool startup = false;
+
 #define dprintk(msg...)		\
 do { 				\
 	if (debug_intelli_plug)		\
@@ -475,8 +477,13 @@ static int __ref intelli_plug_start(void)
 		apply_down_lock(cpu);
 	}
 
-	queue_delayed_work_on(0, intelliplug_wq, &intelli_plug_work,
-			      START_DELAY_MS);
+
+	if (!startup) {
+		queue_delayed_work_on(0, intelliplug_wq, &intelli_plug_work, START_DELAY_MS);
+		startup = true;
+	} else
+		queue_delayed_work_on(0, intelliplug_wq, &intelli_plug_work,
+			      	HZ * 5);
 
 	return ret;
 err_dev:
