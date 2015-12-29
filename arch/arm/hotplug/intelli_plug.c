@@ -30,8 +30,12 @@
 #define INTELLI_PLUG			"intelli_plug"
 #define INTELLI_PLUG_MAJOR_VERSION	5
 #define INTELLI_PLUG_MINOR_VERSION	0
+<<<<<<< HEAD
 
 
+=======
+#define DEF_MAX_CPUS			2
+>>>>>>> 6fa5178... intelliplug: change def cpu.
 #define DEF_SAMPLING_MS			268
 #define RESUME_SAMPLING_MS		HZ / 10
 #define START_DELAY_MS			HZ * 20
