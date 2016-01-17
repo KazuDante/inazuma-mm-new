@@ -64,9 +64,9 @@ static struct hotplug_tuners {
 } hotplug_tuners_ins = {
 	.hotplug_sampling_rate = 30,
 	.hotplug_enable = 0,
-	.min_cpus_online = 2,
+	.min_cpus_online = 1,
 	.maxcoreslimit = NR_CPUS,
-	.maxcoreslimit_sleep = 1,
+	.maxcoreslimit_sleep = 2,
 	.hotplug_suspend = 0,
 	.suspended = false,
 	.force_cpu_up = false,
@@ -75,6 +75,39 @@ static struct hotplug_tuners {
 #define DOWN_INDEX		(0)
 #define UP_INDEX		(1)
 
+static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
+{
+	u64 idle_time;
+	u64 cur_wall_time;
+	u64 busy_time;
+
+	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
+
+	busy_time  = kcpustat_cpu(cpu).cpustat[CPUTIME_USER];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_IRQ];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_NICE];
+
+	idle_time = cur_wall_time - busy_time;
+	if (wall)
+		*wall = jiffies_to_usecs(cur_wall_time);
+
+	return jiffies_to_usecs(idle_time);
+}
+
+static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
+{
+	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
+
+	if (idle_time == -1ULL)
+		return get_cpu_idle_time_jiffy(cpu, wall);
+	else
+		idle_time += get_cpu_iowait_time_us(cpu, wall);
+
+	return idle_time;
+}
 static void __ref hotplug_work_fn(struct work_struct *work)
 {
 	unsigned int upmaxcoreslimit = 0;
@@ -113,8 +146,7 @@ static void __ref hotplug_work_fn(struct work_struct *work)
 			int ret;
 
 			cur_idle_time = get_cpu_idle_time(
-					cpu, &cur_wall_time,
-					0);
+					cpu, &cur_wall_time);
 
 			wall_time = (unsigned int)
 					(cur_wall_time -
@@ -228,7 +260,7 @@ static void __ref hotplug_work_fn(struct work_struct *work)
 		delay -= jiffies % delay;
 	}
 	
-	queue_delayed_work_on(0, alucard_hp_wq,
+	queue_delayed_work_on(0, system_wq,
 				&alucard_hotplug_work,
 				delay);
 }
@@ -303,18 +335,21 @@ static int alucard_hotplug_callback(struct notifier_block *nb,
 			unsigned long action, void *data)
 {
 	unsigned int cpu = (unsigned long)data;
-	struct hotplug_cpuinfo *pcpu_info = NULL;
+	struct hotplug_cpuinfo *pcpu_info;
 
 	switch (action) {
 	case CPU_ONLINE:
 		pcpu_info = &per_cpu(od_hotplug_cpuinfo, cpu);
 		pcpu_info->prev_cpu_idle = get_cpu_idle_time(cpu,
-				&pcpu_info->prev_cpu_wall,
-				0);
-		pcpu_info->cur_up_rate = 1;
-		pcpu_info->cur_down_rate = 1;
+				&pcpu_info->prev_cpu_wall);
 		break;
-	default:
+	case CPU_STARTING:
+		pcpu_info = &per_cpu(od_hotplug_cpuinfo, cpu);
+		pcpu_info->cur_up_rate = 1;
+		break;
+	case CPU_DYING:
+		pcpu_info = &per_cpu(od_hotplug_cpuinfo, cpu);
+		pcpu_info->cur_down_rate = 1;
 		break;
 	}
 
@@ -341,8 +376,7 @@ static void hotplug_start(void)
 				&per_cpu(od_hotplug_cpuinfo, cpu);
 
 		pcpu_info->prev_cpu_idle = get_cpu_idle_time(cpu,
-				&pcpu_info->prev_cpu_wall,
-				0);
+				&pcpu_info->prev_cpu_wall);
 		pcpu_info->cur_up_rate = 1;
 		pcpu_info->cur_down_rate = 1;
 	}
@@ -353,7 +387,7 @@ static void hotplug_start(void)
 		delay -= jiffies % delay;
 	}
 	INIT_DELAYED_WORK_DEFERRABLE(&alucard_hotplug_work, hotplug_work_fn);
-	queue_delayed_work_on(0, alucard_hp_wq,
+	queue_delayed_work_on(0, system_wq,
 				&alucard_hotplug_work,
 				delay);
 
@@ -713,22 +747,29 @@ static int __init alucard_hotplug_init(void)
 	int ret;
 	unsigned int cpu;
 	unsigned int hotplug_freq[NR_CPUS][2] = {
+#ifdef CONFIG_MACH_LGE
+		{0, 1497600},
+		{652800, 1190400},
+		{652800, 1190400},
+		{652800, 0}
+#else
 		{0, 787200},
 		{300000, 998400},
 		{384000, 1094400},
 		{600000, 0}
+#endif
 	};
 	unsigned int hotplug_load[NR_CPUS][2] = {
-		{0, 40},
-		{20, 50},
-		{30, 60},
-		{40, 0}
+		{0, 60},
+		{30, 65},
+		{30, 65},
+		{30, 0}
 	};
 	unsigned int hotplug_rq[NR_CPUS][2] = {
 		{0, 100},
-		{100, 150},
-		{150, 200},
-		{200, 0}
+		{100, 200},
+		{200, 300},
+		{300, 0}
 	};
 	unsigned int hotplug_rate[NR_CPUS][2] = {
 		{1, 1},
@@ -741,12 +782,6 @@ static int __init alucard_hotplug_init(void)
 	if (ret) {
 		printk(KERN_ERR "failed at(%d)\n", __LINE__);
 		return ret;
-	}
-
-	alucard_hp_wq = alloc_workqueue("alu_hp_wq", WQ_HIGHPRI, 0);
-	if (!alucard_hp_wq) {
-		printk(KERN_ERR "Failed to create alu_hp_wq workqueue\n");
-		return -EFAULT;
 	}
 
 	/* INITIALIZE PCPU VARS */
