@@ -50,6 +50,7 @@ static DEFINE_PER_CPU(struct hotplug_cpuinfo, od_hotplug_cpuinfo);
 static struct notifier_block notif;
 #endif
 static struct delayed_work alucard_hotplug_work;
+static struct workqueue_struct *alucard_hp_wq;
 
 static struct hotplug_tuners {
 	unsigned int hotplug_sampling_rate;
@@ -61,13 +62,8 @@ static struct hotplug_tuners {
 	bool suspended;
 	bool force_cpu_up;
 } hotplug_tuners_ins = {
-#ifdef CONFIG_MACH_JF
 	.hotplug_sampling_rate = 30,
 	.hotplug_enable = 0,
-#else
-	.hotplug_sampling_rate = 30,
-	.hotplug_enable = 0,
-#endif
 	.min_cpus_online = 2,
 	.maxcoreslimit = NR_CPUS,
 	.maxcoreslimit_sleep = 1,
@@ -232,7 +228,7 @@ static void __ref hotplug_work_fn(struct work_struct *work)
 		delay -= jiffies % delay;
 	}
 	
-	queue_delayed_work_on(0, system_wq,
+	queue_delayed_work_on(0, alucard_hp_wq,
 				&alucard_hotplug_work,
 				delay);
 }
@@ -307,7 +303,7 @@ static int alucard_hotplug_callback(struct notifier_block *nb,
 			unsigned long action, void *data)
 {
 	unsigned int cpu = (unsigned long)data;
-	struct hotplug_cpuinfo *pcpu_info;
+	struct hotplug_cpuinfo *pcpu_info = NULL;
 
 	switch (action) {
 	case CPU_ONLINE:
@@ -315,14 +311,10 @@ static int alucard_hotplug_callback(struct notifier_block *nb,
 		pcpu_info->prev_cpu_idle = get_cpu_idle_time(cpu,
 				&pcpu_info->prev_cpu_wall,
 				0);
-		break;
-	case CPU_STARTING:
-		pcpu_info = &per_cpu(od_hotplug_cpuinfo, cpu);
 		pcpu_info->cur_up_rate = 1;
-		break;
-	case CPU_DYING:
-		pcpu_info = &per_cpu(od_hotplug_cpuinfo, cpu);
 		pcpu_info->cur_down_rate = 1;
+		break;
+	default:
 		break;
 	}
 
@@ -361,7 +353,7 @@ static void hotplug_start(void)
 		delay -= jiffies % delay;
 	}
 	INIT_DELAYED_WORK_DEFERRABLE(&alucard_hotplug_work, hotplug_work_fn);
-	queue_delayed_work_on(0, system_wq,
+	queue_delayed_work_on(0, alucard_hp_wq,
 				&alucard_hotplug_work,
 				delay);
 
@@ -721,29 +713,22 @@ static int __init alucard_hotplug_init(void)
 	int ret;
 	unsigned int cpu;
 	unsigned int hotplug_freq[NR_CPUS][2] = {
-#ifdef CONFIG_MACH_LGE
-		{0, 1497600},
-		{652800, 1190400},
-		{652800, 1190400},
-		{652800, 0}
-#else
 		{0, 787200},
 		{300000, 998400},
 		{384000, 1094400},
 		{600000, 0}
-#endif
 	};
 	unsigned int hotplug_load[NR_CPUS][2] = {
-		{0, 60},
-		{30, 65},
-		{30, 65},
-		{30, 0}
+		{0, 40},
+		{20, 50},
+		{30, 60},
+		{40, 0}
 	};
 	unsigned int hotplug_rq[NR_CPUS][2] = {
 		{0, 100},
-		{100, 200},
-		{200, 300},
-		{300, 0}
+		{100, 150},
+		{150, 200},
+		{200, 0}
 	};
 	unsigned int hotplug_rate[NR_CPUS][2] = {
 		{1, 1},
@@ -756,6 +741,12 @@ static int __init alucard_hotplug_init(void)
 	if (ret) {
 		printk(KERN_ERR "failed at(%d)\n", __LINE__);
 		return ret;
+	}
+
+	alucard_hp_wq = alloc_workqueue("alu_hp_wq", WQ_HIGHPRI, 0);
+	if (!alucard_hp_wq) {
+		printk(KERN_ERR "Failed to create alu_hp_wq workqueue\n");
+		return -EFAULT;
 	}
 
 	/* INITIALIZE PCPU VARS */
