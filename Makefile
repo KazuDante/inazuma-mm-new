@@ -380,21 +380,19 @@ KBUILD_CFLAGS   := $(GRAPHITE)  -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security -Wno-sizeof-pointer-memaccess \
-<<<<<<< HEAD
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves -ffast-math \
            -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
  		   -fno-delete-null-pointer-checks \
  		   -ftree-loop-vectorize -ftree-loop-distribute-patterns -ftree-slp-vectorize \
             -fvect-cost-model -ftree-partial-pre \
             -fgcse-lm -fgcse-sm -fsched-spec-load -fsingle-precision-constant
-=======
 		   -fno-delete-null-pointer-checks -std=gnu89 \
 		   -fgcse-after-reload -fgcse-sm -fgcse-las \
 		   -fweb -frename-registers \
 		   -ftree-loop-im -ftree-loop-linear \
 		   -ftree-loop-ivcanon -ftree-vectorize \
 		   -fmodulo-sched -ffast-math
->>>>>>> 52b5392... Makefile: Optimizer arm flags
+
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
@@ -587,13 +585,13 @@ all: vmlinux
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
 else
-<<<<<<< HEAD
+
 KBUILD_CFLAGS	+= -O3 -std=gnu89
 KBUILD_CFLAGS += $(call cc-disable-warning,maybe-uninitialized)
 KBUILD_CFLAGS += $(call cc-disable-warning,array-bounds)
-=======
+
 KBUILD_CFLAGS	+= -O2
->>>>>>> 52b5392... Makefile: Optimizer arm flags
+
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
