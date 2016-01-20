@@ -62,8 +62,8 @@ static struct hotplug_tuners {
 	bool suspended;
 	bool force_cpu_up;
 } hotplug_tuners_ins = {
-	.hotplug_sampling_rate = 30,
-	.hotplug_enable = 0,
+	.hotplug_sampling_rate = 40,
+	.hotplug_enable = 1,
 	.min_cpus_online = 2,
 	.maxcoreslimit = NR_CPUS,
 	.maxcoreslimit_sleep = 1,
