@@ -57,4 +57,8 @@ config USES_UTAG_WIFI_MAC
 	bool "Read WiFi MAC address from UTAGs"
 	default n
 
+config ENABLE_DEBUG_WLAN
+	bool "Enable debug WLAN"
+	default n
+
 endif # PRIMA_WLAN || PRONTO_WLAN
