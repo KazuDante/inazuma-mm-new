@@ -34,7 +34,7 @@ rm $ZIMAGE
 rm $ZIP_DIR/system/lib/modules/*
 fi
 echo "Initialize Defconfig" 
-make cm_otus_defconfig
+make cm_condor_defconfig
 echo "Building Kernel"
 
 make -j4 zImage-dtb
@@ -48,7 +48,7 @@ echo "Copying modules"
 find . -name '*.ko' -exec cp {} $ZIP_DIR/system/lib/modules \;
 sleep 2
 #Move Wlan driver to proper place
-mv /home/zeeshan/zip/system/lib/modules/wlan.ko /home/zeeshan/zip/system/lib/modules/pronto_wlan.ko
+mv /home/zeeshan/zip/system/lib/modules/wlan.ko /home/zeeshan/zip/system/lib/modules/pronto/pronto_wlan.ko
 echo "Compressing Kernel zip"
 cd $KERNEL_DIR
 . zip.sh $1
