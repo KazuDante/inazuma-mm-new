@@ -755,7 +755,7 @@ static int __init alucard_hotplug_init(void)
 #else
 		{0, 787200},
 		{300000, 998400},
-		{384000, 1094400},
+		{384000, 998400},
 		{600000, 0}
 #endif
 	};
