@@ -17,7 +17,7 @@
 
 ZIP_DIR="/home/zeeshan/zip"
 KERNEL="inazuma-mm"
-RELEASE="R2"
+RELEASE="R3"
 REL_DIR="/home/zeeshan/Kernel-Release"
 
 cd $ZIP_DIR
