@@ -64,9 +64,15 @@ static struct hotplug_tuners {
 } hotplug_tuners_ins = {
 	.hotplug_sampling_rate = 40,
 	.hotplug_enable = 1,
+#ifdef CONFIG_ALUCARD_HOTPLUG_OTUS
+        .min_cpus_online = 4,
+	.maxcoreslimit = NR_CPUS,
+	.maxcoreslimit_sleep = 2,
+#else
 	.min_cpus_online = 2,
 	.maxcoreslimit = NR_CPUS,
 	.maxcoreslimit_sleep = 1,
+#endif
 	.hotplug_suspend = 0,
 	.suspended = false,
 	.force_cpu_up = false,

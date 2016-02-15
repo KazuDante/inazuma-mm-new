@@ -3176,4 +3176,13 @@ config ALUCARD_HOTPLUG
 	help
 	  Alucard-hotplug cpu hotplug driver for ARM SOCs
 
+config ALUCARD_HOTPLUG_OTUS
+	bool "Tune ALucard For Otus"
+	default n
+	help
+          This option will tune Alucard hotplug for otus
+          by default its tuned for condor
+
+
+
 endif
