@@ -28,6 +28,7 @@
 #define DEF_MAX_CPUS			4
 else
 #define DEF_MAX_CPUS			2
+#endif
 
 #define DEF_SAMPLING_MS			268
 #define RESUME_SAMPLING_MS		HZ / 10
