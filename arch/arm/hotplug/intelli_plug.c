@@ -24,6 +24,7 @@
 #define INTELLI_PLUG			"intelli_plug"
 #define INTELLI_PLUG_MAJOR_VERSION	5
 #define INTELLI_PLUG_MINOR_VERSION	1
+#define DEF_MAX_CPUS			2
 
 #define DEF_SAMPLING_MS			268
 #define RESUME_SAMPLING_MS		HZ / 10
@@ -640,7 +641,7 @@ static ssize_t store_min_cpus_online(struct kobject *kobj,
 	unsigned int val;
 
 	ret = sscanf(buf, "%u", &val);
-	if (ret != 1 || val < 1 || val > NR_CPUS)
+	if (ret != 1 || val < 1 || val > DEF_MAX_CPUS)
 		return -EINVAL;
 
 	if (max_cpus_online < val)
@@ -659,7 +660,7 @@ static ssize_t store_max_cpus_online(struct kobject *kobj,
 	unsigned int val;
 
 	ret = sscanf(buf, "%u", &val);
-	if (ret != 1 || val < 1 || val > NR_CPUS)
+	if (ret != 1 || val < 1 || val > DEF_MAX_CPUS)
 		return -EINVAL;
 
 	if (min_cpus_online > val)
@@ -678,7 +679,7 @@ static ssize_t store_max_cpus_online_susp(struct kobject *kobj,
 	unsigned int val;
 
 	ret = sscanf(buf, "%u", &val);
-	if (ret != 1 || val < 1 || val > NR_CPUS)
+	if (ret != 1 || val < 1 || val > DEF_MAX_CPUS)
 		return -EINVAL;
 
 	max_cpus_online_susp = val;
