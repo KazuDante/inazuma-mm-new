@@ -763,3 +763,4 @@ MODULE_DESCRIPTION("'intell_plug' - An intelligent cpu hotplug driver for "
 	"Low Latency Frequency Transition capable processors");
 MODULE_LICENSE("GPLv2");
 
+
