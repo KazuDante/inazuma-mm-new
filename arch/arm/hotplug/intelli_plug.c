@@ -24,9 +24,6 @@
 #define INTELLI_PLUG			"intelli_plug"
 #define INTELLI_PLUG_MAJOR_VERSION	5
 #define INTELLI_PLUG_MINOR_VERSION	1
-#ifdef CONFIG_INTELLI_PLUG_DEF_CPU
-#define DEF_MAX_CPUS			4
-else
 #define DEF_MAX_CPUS			2
 #endif
 
