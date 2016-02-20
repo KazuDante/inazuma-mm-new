@@ -4,3 +4,9 @@ config INTELLI_PLUG
         help
           Generic Intelli-plug cpu hotplug driver for ARM SOCs
 
+config INTELLI_PLUG_DEF_CPU
+       bool "change def cpu for otus
+       default n
+       help
+         this will change defcpu to quad core for otus.
+         by default its dual core for condor
