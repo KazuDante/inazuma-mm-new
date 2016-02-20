@@ -29,13 +29,16 @@
 
 #define INTELLI_PLUG			"intelli_plug"
 #define INTELLI_PLUG_MAJOR_VERSION	5
+
 #define INTELLI_PLUG_MINOR_VERSION	0
-<<<<<<< HEAD
 
 
-=======
+
+#ifndef CONFIG_INTELLI_PLUG_DEF_CPU
 #define DEF_MAX_CPUS			2
->>>>>>> 6fa5178... intelliplug: change def cpu.
+#endif
+#define DEF_MAX_CPUS			4
+
 #define DEF_SAMPLING_MS			268
 #define RESUME_SAMPLING_MS		HZ / 10
 #define START_DELAY_MS			HZ * 20
@@ -912,8 +915,4 @@ MODULE_AUTHOR("Paul Reioux <reioux@gmail.com>");
 MODULE_DESCRIPTION("'intell_plug' - An intelligent cpu hotplug driver for "
 	"Low Latency Frequency Transition capable processors");
 MODULE_LICENSE("GPLv2");
-<<<<<<< HEAD
 
-
-=======
->>>>>>> parent of 53d46e7... Intelliplug: Bump to 5.1

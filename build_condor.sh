@@ -1,5 +1,4 @@
-
-#
+ #
  # Copyright � 2016, Zeeshan Hussain "zeeshanhussain" <zeeshanhussain12@gmail.com>
  # Custom build script
  #
@@ -22,6 +21,16 @@ ZIP_DIR="/home/zeeshan/zip"
 KERNEL="zImage-dtb"
 
 #Main Process starts from here
+
+blue='\033[0;34m'
+cyan='\033[0;36m'
+yellow='\033[0;33m'
+red='\033[0;31m'
+nocol='\033[0m'
+#delete old things
+rm -f  $ZIP_DIR/kernel/zImage-dtb
+rm -rf $ZIP_DIR/system/lib/modules/pronto
+rm -f $ZIP_DIR/*.zip
 BUILD_START=$(date +"%s")
 export ARCH=arm
 export SUBARCH=arm
@@ -33,10 +42,11 @@ then
 rm $ZIMAGE
 rm $ZIP_DIR/system/lib/modules/*
 fi
-echo "Initialize Defconfig" 
+echo -e "$cyan*************************"
+echo -e "Initialize Defconfig" 
+echo -e "******************************$blue"
 make cm_condor_defconfig
 echo "Building Kernel"
-
 make -j4 zImage-dtb
 echo "Building Modules"
 make -j4 modules
