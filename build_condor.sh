@@ -31,6 +31,7 @@ nocol='\033[0m'
 rm -f  $ZIP_DIR/kernel/zImage-dtb
 rm -rf $ZIP_DIR/system/lib/modules/pronto
 rm -f $ZIP_DIR/*.zip
+mkdir -p $ZIP_DIR/system/lib/modules/pronto 
 BUILD_START=$(date +"%s")
 export ARCH=arm
 export SUBARCH=arm

@@ -17,13 +17,13 @@
 
 ZIP_DIR="/home/zeeshan/zip"
 KERNEL="inazuma-mm"
-RELEASE="R4"
+RELEASE="R5"
 REL_DIR="/home/zeeshan/Kernel-Release"
 
 cd $ZIP_DIR
 
 
-mkdir system/lib/modules/pronto 
+
 
 zip -r $KERNEL-$RELEASE-$(date +"%Y%m%d").zip *
 
