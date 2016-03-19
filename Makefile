@@ -391,7 +391,8 @@ KBUILD_CFLAGS   := $(GRAPHITE)  -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fweb -frename-registers \
 		   -ftree-loop-im -ftree-loop-linear \
 		   -ftree-loop-ivcanon -ftree-vectorize \
-		   -fmodulo-sched -ffast-math
+		   -fmodulo-sched -ffast-math \
+		   -fno-delete-null-pointer-checks -fgnu89-inline
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
